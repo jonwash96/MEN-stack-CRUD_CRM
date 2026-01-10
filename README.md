@@ -1,9 +1,10 @@
-# MEN Stach CRUD CRM App
+# Terminal CRM
+## Terminal-based MEN Stack CRUD CRM App
 
-## Objective
+### Objective
 A Customer Relationship Management (CRM) tool is an application that allows a company to keep track of their customers. In this lab. you’re going to create a terminal-based CRM application that will have full CRUD functionality on a single model: Customer.
 
-### Technologies:
+### Technologies Used
 - [M]ongoDB
 - [E]xpressJS
 - [N]odeJS

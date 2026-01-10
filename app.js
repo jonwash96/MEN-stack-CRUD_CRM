@@ -5,8 +5,8 @@ let action;
 
 //* DATA
 const users = [
-    { id: '658226acdcbecfe9b99d5421', Name: "Matt", Age: 43, updated: Number },
-    { id: '65825d1ead6cd90c5c430e24', Name: "Vivienne", Age: 6, updated: Number },
+    { id: '658226acdcbecfe9b99d5421', name: "Matt", age: 43, updated: Number },
+    { id: '65825d1ead6cd90c5c430e24', name: "Vivienne", age: 6, updated: Number },
 ];
 
 //* FUNC
@@ -38,7 +38,7 @@ function selectAction() {
 
 function create() {
     let newUsers = [];
-    console.log("\nEnter a new user in CSV format: <id>, <Name>, <age>\nSeparate each field by comma.\nDo not include labels (i.e. id:, name:).\nDo not wrap names in quotes.\nUse ';' to separate each new user.\nIf you prefer a prompt for each field, type 'p'.\nType 'q' to Quit");
+    console.log("\nEnter a new user in CSV format: <id>, <name>, <age>\n Separate each field by comma.\n Do not include labels (i.e. id:, name:).\n Do not wrap names in quotes.\n Use ';' to separate each new user.\nIf you prefer a prompt for each field, type 'p'.\nType 'q' to Quit");
     let input = prompt("New Users: ");
     if (input === 'q') return;
 
@@ -47,8 +47,8 @@ function create() {
         while (run) {
             const newUser = {};
             newUser['id'] = prompt("User Id: ");
-            newUser['Name'] = prompt("Name: ");
-            newUser['Age'] = prompt("Age: ");
+            newUser['name'] = prompt("name: ");
+            newUser['age'] = prompt("age: ");
             newUser['update'] = Date.now();
             console.log(newUser, "\n");
 
@@ -75,49 +75,93 @@ function create() {
             }
         };
     } else {
-        const array = input.split(';');
-        array.forEach(line => {
-            const bits = line.split(',');
-            newUsers.push(Object({
-                id: bits[0].trim(),
-                Name:bits[1].trim(),
-                Age: bits.pop().trim(),
-                update: Date.now(),
-            }));
-        })
-        console.log("\n", newUsers, newUsers.length + " New Users Created.\n");
+        let run = true;
+        while (run) {
+            const array = input.split(';');
+            array.forEach(line => {
+                const bits = line.split(',');
+                newUsers.push(Object({
+                    id: bits[0].trim(),
+                    name:bits[1].trim(),
+                    age: bits.pop().trim(),
+                    update: Date.now(),
+                }))
+            });
+            console.log("\n", newUsers, "\nCreating "+newUsers.length + " New Users.\n");
+            input = prompt("Does the above information look correct? Type 'y' for yes, 'n' for no, or 'q' to Quit. ");
+            if (input==='q') return;
+            if (input==='y') break;
+
+            while (run) {
+                const confirmationErr = prompt("Invalid Key Pressed! Type 'q' to Quit. Is all the information correct? Type 'y' for yes, 'n' for no. ");
+                if (confirmationErr==='q') return;
+                if (confirmationErr === 'y') run = false;
+                if (confirmationErr==='n') return(create());
+            }
+        };
+
         users.push(...newUsers);
         newUsers = [];
     };
 
-    input = prompt("Do you have more to add? Type 'y' for yes, any other key to return to the menu, or 'q' to Quit. ")
+    input = prompt("Do you have more to add? Type 'y' for yes, or 'enter' to return to the menu, or 'q' to Quit. ")
     if (input === 'q') return;
-    if (input === 'y') create();
+    if (input === 'y') return(create());
 
     selectAction();
 }
 
 function read() {
-    let input;
+    let input, foundUser;
+    let list = [];
     const last5Users = users.sort((a, b) => a.updated + b.updated);
 
-    console.log("\n5 Most recently updated users.\n");
+    console.log("\n5 Most recently updated users.");
     for (let i = 0; i < 5; i++) {
+        list.push(last5Users[i]);
         if (!last5Users[i]) break;
-        console.log(i + 1, "id: " + last5Users[i].id, "Name: " + last5Users[i].Name, "Age: " + last5Users[i].Age);
+        console.log(i + 1, "id: " + last5Users[i].id, "name: " + last5Users[i].name, "age: " + last5Users[i].age);
     }
 
-    console.log("\nTo see all users, type 'a' or 'all', or copy & paste a userID.");
-    input = prompt("Type 'q' to Quit. To start over, type any other key. ");
+    console.log("\nTo see all users, type 'a' or 'all'.\nTo inspect a specific user, type the number or enter a userID.");
+    input = prompt("Type 'q' to Quit. To return to the main menu, type any other key. ");
     if (input === 'q') return;
 
     if (/^a$|^all$/i.test(input)) {
+        list = [];
+        console.log("\nAll Users:");
         for (let i = 0; i < users.length; i++) {
-            console.log(i + 1, "id: ", last5Users.id, "Name: ", last5Users.name, "Age: ", last5Users.age);
-        }
+            list.push(users[i]);
+            console.log(i + 1, "id: ", users[i].id, "name: ", users[i].name, "age: ", users[i].age);
+        };
+        console.log("\nTo inspect a specific user, type the number or enter a userID.");
+        input = prompt("Type 'q' to Quit. To return to the main menu, type any other key. ");
+        if (input === 'q') return;
     };
 
-    selectAction();
+    while (true) {
+        if (list[input - 1] || users.find(user => user.id === input)) break;
+        console.log("\nNot found! Select the number of the user you want to update, or paste in the userID.\nType 'q' to Quit or 'a' to view all.")
+        input = prompt("Number or userID: ");
+        if (input === 'q') return;
+        if (input==='a') return read();
+    };
+
+    input.length <= 3
+        ? foundUser = users.find(user => user.id === list[input -1].id)
+        : foundUser = users.find(user => user.id === input);
+
+    console.log("\n", foundUser);
+    // console.log("\nActions:", 1, "Update Customer", 2, "Delete Customer", 3, "View All Customers");
+    input = prompt("\nType 'q' to Quit, 'a' to view all users, or 'enter' to return to the main menu. ");
+    switch (input) {
+        case '1': update(foundUser.id); break;
+        case '2': deleteUser(foundUser.id); break;
+        case 'a': 
+        case '3': read(); break;
+        case 'q': return selectAction(); break;
+    };
+    return selectAction();
 }
 
 function update() {
@@ -128,8 +172,8 @@ function update() {
     console.log("\n5 Most recently updated users.");
     for (let i = 0; i < 5; i++) {
         if (!users[i]) break;
-        list.push(last5Users[i - 1]);
-        console.log(i + 1, "id: " + last5Users[i].id, "Name: " + last5Users[i].Name, "Age: " + last5Users[i].Age);
+        list.push(last5Users[i]);
+        console.log(i + 1, "id: " + last5Users[i].id, "name: " + last5Users[i].name, "age: " + last5Users[i].age);
     }
 
     console.log("\nSelect the number of the user you want to update, or paste in the userID of any user.\nTo see all users, type 'a' or 'all'\nType 'q' to Quit.");
@@ -140,10 +184,10 @@ function update() {
         list = [];
         console.log("\nAll Users:");
         for (let i = 0; i < users.length; i++) {
-            list.push(last5Users[i - 1]);
-            console.log(i + 1, "id: ", last5Users[i].id, "Name: ", last5Users[i].Name, "Age: ", last5Users[i].Age);
-        }
-        input = prompt("Select the number of the user you want to update, or paste in the userID. ");
+            list.push(last5Users[i]);
+            console.log(i + 1, "id: ", last5Users[i].id, "name: ", last5Users[i].name, "age: ", last5Users[i].age);
+        };
+        input = prompt("\nSelect the number of the user you want to update, or paste in the userID. ");
         if (input === 'q') return;
     };
 
@@ -156,7 +200,7 @@ function update() {
     };
 
     input.length <= 3
-        ? foundUser = users.find(user => user.id === list[input].id) //! not sure why this works. Should be input -1, but it's not.
+        ? foundUser = users.find(user => user.id === list[input -1].id)
         : foundUser = users.find(user => user.id === input);
 
     console.log(`\nUpdate ${JSON.stringify(foundUser)}?`);
@@ -164,30 +208,49 @@ function update() {
     if (input === 'q') return;
 
     if (geaux === 'y') {
-        console.log("\nEnter the information you want to update as key-value pairs in CSV format.\nIf you prefer a prompt for each field, type 'p'\nFormat = id:<userID>, Name:<username>, Age:<age>");
-
+        let run = true;
+        let updatedUser = {};
+        while (run) {
+        console.log("\nEnter the information you want to update as key-value pairs in CSV format.\nIf you prefer a prompt for each field, type 'p'\nFormat = id:<userID>, name:<username>, age:<age>");
         const result = prompt("Updated Information: ");
-        if (result === 'p') {
-            console.log("\nEnter new information for each field, or leave unchanged.")
-            const updatedUser = {};
-            updatedUser['id'] = prompt("id: ", foundUser.id);
-            updatedUser['Name'] = prompt("Name: ", foundUser.Name);
-            updatedUser['Age'] = prompt("Age: ", foundUser.Age);
-            foundUser = updatedUser;
-        } else {
-            if (result.includes(',')) {
-                const parsed = result.split(',');
-                parsed.forEach(field => field.split(':').forEach(bit => {
-                    foundUser[bit[0]] = bit[1];
-                }));
+
+            if (result === 'p') {
+                console.log("\nEnter new information for each field, or leave unchanged.")
+                updatedUser['id'] = prompt("id: ", foundUser.id);
+                updatedUser['name'] = prompt("name: ", foundUser.name);
+                updatedUser['age'] = prompt("age: ", foundUser.age);
             } else {
-                result.split(':').forEach(bit => {
-                    foundUser[bit[0]] = bit[1];
-                });
+                updatedUser = Object.create(foundUser);
+                if (result.includes(',')) {
+                    result.split(',').forEach(pair => {
+                        const bits = pair.split(':');
+                        bits.forEach(bit => {
+                            updatedUser[bits[0].trim()] = bits[1].trim();
+                        })
+                    });
+                } else {
+                    const bits = result.split(':').map(bit => bit.trim());
+                    updatedUser[bits[0]] = bits[1];
+                }
+            };
+            
+            updatedUser.updated = Date.now();
+            console.log("\n", updatedUser);
+    
+            input = prompt("Does the above information look correct? Type 'y' for yes, 'n' for no, or 'q' to Quit. ");
+            if (input==='q') {return;
+            } else if (input==='y') {break;
+            } else if (input==='n') {null;
+            } else {
+                while (run) {
+                    const confirmationErr = prompt("Invalid Key Pressed! Type 'q' to Quit. Is all the information correct? Type 'y' for yes, 'n' for no. ");
+                    if (confirmationErr==='q') return;
+                    if (confirmationErr === 'y') run = false;
+                    if (confirmationErr==='n') break;
+                }
             }
         };
-
-        console.log("\n", foundUser);
+        foundUser = updatedUser;
 
     } else {
         console.log("Aborted! Please try a new search.");
@@ -205,8 +268,8 @@ function deleteUser() {
     console.log("\n5 Most recently updated users.");
     for (let i = 0; i < 5; i++) {
         if (!users[i]) break;
-        list.push(last5Users[i - 1]);
-        console.log(i + 1, "id: " + last5Users[i].id, "Name: " + last5Users[i].Name, "Age: " + last5Users[i].Age);
+        list.push(last5Users[i]);
+        console.log(i + 1, "id: " + last5Users[i].id, "name: " + last5Users[i].name, "age: " + last5Users[i].age);
     }
 
     console.log("\nSelect the number of the user you want to delete, or paste in the userID of any user.\nTo see all users, type 'a' or 'all'. Type 'q' to Quit.");
@@ -217,8 +280,8 @@ function deleteUser() {
         list = [];
         console.log("\nAll Users:");
         for (let i = 0; i < users.length; i++) {
-            list.push(last5Users[i - 1]);
-            console.log(i + 1, "id: ", last5Users[i].id, "Name: ", last5Users[i].Name, "Age: ", last5Users[i].Age);
+            list.push(last5Users[i]);
+            console.log(i + 1, "id: ", last5Users[i].id, "name: ", last5Users[i].name, "age: ", last5Users[i].age);
         }
         input = prompt("Select the number of the user you want to delete, or paste in the userID. ");
         if (input === 'q') return;
@@ -241,7 +304,7 @@ function deleteUser() {
     if (input === 'q') return;
 
     if (geaux === 'y') {
-        delete users.find(user => user.id === foundUser.id);
+        users.splice(users.findIndex(user => user.id === foundUser.id), 1);
         console.log("User deleted.");
     } else {
         console.log("Aborted! Please try a new search.");
